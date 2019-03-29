@@ -12,8 +12,8 @@
 
 #include "defs.h"
 
-.globl __swapcontext;
-__swapcontext:
+.globl _libucontext_swapcontext;
+_libucontext_swapcontext:
 	str	xzr, [x0, #R0_OFFSET + (0 * REGSZ)]
 
 	/* save GPRs */
@@ -49,13 +49,14 @@ __swapcontext:
 
 	/* move x1 to x0 and call setcontext */
 	mov	x0, x1
-	bl	__setcontext
+	bl	_libucontext_setcontext
 
 	/* hmm, we came back here try to return */
 	mov	x30, x28
 	ret
+.align 2
 
-
-
+#ifndef CUSTOM_IMPL
 .weak swapcontext;
-swapcontext = __swapcontext;
+swapcontext = _libucontext_swapcontext;
+#endif

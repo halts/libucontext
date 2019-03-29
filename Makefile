@@ -1,48 +1,51 @@
 ARCH := $(shell uname -m)
 
-CFLAGS = -ggdb3 -O2 -Wall -Iarch/${ARCH}
+ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+BUILD_DIR ?= .
 
-LIBUCONTEXT_C_SRC = \
-	arch/${ARCH}/makecontext.c
+LIBUCONTEXT = $(BUILD_DIR)/libucontext.a
 
-LIBUCONTEXT_S_SRC = \
-	arch/${ARCH}/getcontext.S \
-	arch/${ARCH}/setcontext.S \
-	arch/${ARCH}/swapcontext.S \
-	arch/${ARCH}/startcontext.S
+all: $(LIBUCONTEXT)
 
-LIBUCONTEXT_OBJ = ${LIBUCONTEXT_C_SRC:.c=.o} ${LIBUCONTEXT_S_SRC:.S=.o}
-LIBUCONTEXT_SOVERSION = 0
-LIBUCONTEXT_NAME = libucontext.so
-LIBUCONTEXT_SONAME = libucontext.so.${LIBUCONTEXT_SOVERSION}
-LIBUCONTEXT_PATH = /lib/${LIBUCONTEXT_SONAME}
+CSRCS := $(wildcard arch/${ARCH}/*.c)
+SSRCS := $(wildcard arch/${ARCH}/*.S)
+OBJS := $(CSRCS:%.c=$(BUILD_DIR)/%.o) $(SSRCS:%.S=$(BUILD_DIR)/%.o)
+DEPS := $(OBJS:%.o=%.d)
 
-all: ${LIBUCONTEXT_SONAME}
+INC_DIRS := include $(BUILD_DIR)/arch/${ARCH}
+INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-${LIBUCONTEXT_NAME}: ${LIBUCONTEXT_OBJ}
-	$(CC) -o ${LIBUCONTEXT_NAME} -Wl,-soname,${LIBUCONTEXT_SONAME} \
-		-shared ${LIBUCONTEXT_OBJ}
+override CFLAGS +=					\
+	-DG_LOG_DOMAIN='"ucontext"'			\
+	$(INC_FLAGS)					\
+	-MMD -MP
 
-${LIBUCONTEXT_SONAME}: ${LIBUCONTEXT_NAME}
-	ln -sf ${LIBUCONTEXT_NAME} ${LIBUCONTEXT_SONAME}
+$(LIBUCONTEXT): $(OBJS)
 
-.c.o:
-	$(CC) -std=c99 -D_BSD_SOURCE -fPIC -DPIC ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
-
-.S.o:
-	$(CC) -fPIC -DPIC ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
+.PHONY: clean
 
 clean:
-	rm -f ${LIBUCONTEXT_NAME} ${LIBUCONTEXT_SONAME} ${LIBUCONTEXT_OBJ} test_libucontext
+	rm -r $(OBJS) $(DEPS) $(LIBUCONTEXT)
 
-install: all
-	install -D -m755 ${LIBUCONTEXT_NAME} ${DESTDIR}/${LIBUCONTEXT_PATH}
-	ln -sf ${LIBUCONTEXT_SONAME} ${DESTDIR}/lib/${LIBUCONTEXT_NAME}
+$(BUILD_DIR)/arch/${ARCH}/%.o: $(ROOT_DIR)/arch/${ARCH}/%.c
+	@$(MKDIR_P) $(dir $@)
+	$(call quiet-command,$(CC) $(CFLAGS) -c -o $@ $<,"CC","$@")
 
-check: test_libucontext ${LIBUCONTEXT_SONAME}
-	env LD_LIBRARY_PATH=$(shell pwd) ./test_libucontext
+$(BUILD_DIR)/arch/${ARCH}/%.o: $(ROOT_DIR)/arch/${ARCH}/%.S
+	@$(MKDIR_P) $(dir $@)
+	$(call quiet-command,$(CC) $(CFLAGS) -c -o $@ $<,"CC","$@")
 
-test_libucontext: test_libucontext.c ${LIBUCONTEXT_NAME}
-	$(CC) -std=c99 -D_BSD_SOURCE ${CFLAGS} ${CPPFLAGS} $@.c -o $@ -L. -lucontext
+%.a:
+	$(call quiet-command,rm -f $@ && $(AR) rcs $@ $^,"AR","$@")
 
-.PHONY: check
+MKDIR_P ?= mkdir -p
+quiet-command-run = $(if $(V),,$(if $2,printf "  %-7s %s\n" $2 $3 && ))$1
+quiet-@ = $(if $(V),,@)
+quiet-command = $(quiet-@)$(call quiet-command-run,$1,$2,$3)
+
+print-%:
+	@echo '$*=$($*)'
+
+.SUFFIXES:
+
+-include $(DEPS)

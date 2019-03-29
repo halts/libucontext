@@ -12,8 +12,8 @@
 
 #include "defs.h"
 
-.globl __setcontext;
-__setcontext:
+.globl _libucontext_setcontext;
+_libucontext_setcontext:
 	/* restore GPRs */
 	ldp	x18, x19, [x0, #R0_OFFSET + (18 * REGSZ)]
 	ldp	x20, x21, [x0, #R0_OFFSET + (20 * REGSZ)]
@@ -40,8 +40,19 @@ __setcontext:
 
 	/* jump to new PC */
 	br	x16
+.align 2
 
+.globl __start_context;
+__start_context:
+	/* get the proper context into position and test for NULL */
+	mov	x0, x19
+	cbnz	x0, _libucontext_setcontext
 
+	/* something went wrong, exit */
+	b	_exit
+.align 2
+
+#ifndef CUSTOM_IMPL
 .weak setcontext;
-setcontext = __setcontext;
-
+setcontext = _libucontext_setcontext;
+#endif

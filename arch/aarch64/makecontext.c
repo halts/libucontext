@@ -10,21 +10,27 @@
  * from the use of this software.
  */
 
-#define _GNU_SOURCE
 #include <stddef.h>
+#include <stdint.h>
 #include <stdarg.h>
+#ifdef CUSTOM_IMPL
+#include <libucontext.h>
+#define UCONTEXT_T libucontext_ucontext_t
+#else
+#define UCONTEXT_T ucontext_t
+#define _GNU_SOURCE
 #include <signal.h>
 #include <string.h>
-#include <stdint.h>
 #include <stdio.h>
+#endif
 #include "defs.h"
 
 
-extern void __start_context(void);
+extern void _start_context(void);
 
 
 void
-__makecontext(ucontext_t *ucp, void (*func)(void), int argc, ...)
+libucontext_makecontext(UCONTEXT_T *ucp, void (*func)(void), int argc, ...)
 {
 	unsigned long *sp;
 	unsigned long *regp;
@@ -38,7 +44,7 @@ __makecontext(ucontext_t *ucp, void (*func)(void), int argc, ...)
 	ucp->uc_mcontext.sp = (uintptr_t) sp;
 	ucp->uc_mcontext.pc = (uintptr_t) func;
 	ucp->uc_mcontext.regs[19] = (uintptr_t) ucp->uc_link;
-	ucp->uc_mcontext.regs[30] = (uintptr_t) &__start_context;
+	ucp->uc_mcontext.regs[30] = (uintptr_t) &_start_context;
 
 	va_start(va, argc);
 
@@ -54,4 +60,6 @@ __makecontext(ucontext_t *ucp, void (*func)(void), int argc, ...)
 }
 
 
-extern __typeof(__makecontext) makecontext __attribute__((weak, __alias__("__makecontext")));
+#ifndef CUSTOM_IMPL
+extern __typeof(libucontext_makecontext) makecontext __attribute__((weak, __alias__("libucontext_makecontext")));
+#endif

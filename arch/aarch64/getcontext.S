@@ -12,8 +12,8 @@
 
 #include "defs.h"
 
-.globl __getcontext;
-__getcontext:
+.globl _libucontext_getcontext;
+_libucontext_getcontext:
 	str	xzr, [x0, #R0_OFFSET + (0 * REGSZ)]
 
 	/* save GPRs */
@@ -48,7 +48,9 @@ __getcontext:
 
 	mov	x0, #0
 	ret
+.align 2
 
-
+#ifndef CUSTOM_IMPL
 .weak getcontext;
-getcontext = __getcontext;
+getcontext = _libucontext_getcontext;
+#endif
