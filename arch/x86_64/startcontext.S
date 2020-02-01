@@ -21,12 +21,12 @@ __start_context:
 	je	no_linked_context
 
 	/* call setcontext to switch to the linked context */
-	call	__setcontext@plt
+	call	_libucontext_setcontext
 	movq	%rax, %rdi
 
 no_linked_context:
 	/* we are returning into a null context, it seems, so maybe we should exit */
-	call	exit@plt
+	call	_exit
 
 	/* something is really hosed, call hlt to force termination */
 	hlt

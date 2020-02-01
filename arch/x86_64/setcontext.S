@@ -10,8 +10,8 @@
  * from the use of this software.
  */
 
-.globl __setcontext;
-__setcontext:
+.globl _libucontext_setcontext;
+_libucontext_setcontext:
 	/* set all of the registers */
 	movq    40(%rdi), %r8
 	movq    48(%rdi), %r9
@@ -40,5 +40,7 @@ __setcontext:
 	xorl    %eax, %eax
 	ret
 
+#ifndef CUSTOM_IMPL
 .weak setcontext;
-setcontext = __setcontext;
+setcontext = _libucontext_setcontext;
+#endif

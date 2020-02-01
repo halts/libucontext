@@ -10,8 +10,8 @@
  * from the use of this software.
  */
 
-.globl __getcontext;
-__getcontext:
+.globl _libucontext_getcontext;
+_libucontext_getcontext:
 	/* copy all of the current registers into the ucontext structure */
 	movq	%r8, 40(%rdi)
 	movq	%r9, 48(%rdi)
@@ -44,5 +44,7 @@ __getcontext:
 	ret
 
 
+#ifndef CUSTOM_IMPL
 .weak getcontext;
-getcontext = __getcontext;
+getcontext = _libucontext_getcontext;
+#endif

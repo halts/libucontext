@@ -10,8 +10,8 @@
  * from the use of this software.
  */
 
-.globl __swapcontext;
-__swapcontext:
+.globl _libucontext_swapcontext;
+_libucontext_swapcontext:
 	/* copy all of the current registers into the ucontext structure pointed by
 	   the first argument */
 	movq	%r8, 40(%rdi)
@@ -70,5 +70,7 @@ __swapcontext:
 	ret
 
 
+#ifndef CUSTOM_IMPL
 .weak swapcontext;
-swapcontext = __swapcontext;
+swapcontext = _libucontext_swapcontext;
+#endif
