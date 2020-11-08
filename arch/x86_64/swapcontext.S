@@ -10,6 +10,9 @@
  * from the use of this software.
  */
 
+.globl libucontext_swapcontext;
+libucontext_swapcontext:
+
 .globl _libucontext_swapcontext;
 _libucontext_swapcontext:
 	/* copy all of the current registers into the ucontext structure pointed by

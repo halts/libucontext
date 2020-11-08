@@ -12,6 +12,9 @@
 
 #include "defs.h"
 
+.globl libucontext_swapcontext;
+libucontext_swapcontext:
+
 .globl _libucontext_swapcontext;
 _libucontext_swapcontext:
 	str	xzr, [x0, #R0_OFFSET + (0 * REGSZ)]

@@ -10,6 +10,9 @@
  * from the use of this software.
  */
 
+.globl _start_context;
+_start_context:
+
 .globl __start_context;
 __start_context:
 	/* get the proper context into position and test for NULL */

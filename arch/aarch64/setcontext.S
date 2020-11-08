@@ -12,6 +12,9 @@
 
 #include "defs.h"
 
+.globl libucontext_setcontext;
+libucontext_setcontext:
+
 .globl _libucontext_setcontext;
 _libucontext_setcontext:
 	/* restore GPRs */
@@ -41,6 +44,9 @@ _libucontext_setcontext:
 	/* jump to new PC */
 	br	x16
 .align 2
+
+.globl _start_context;
+_start_context:
 
 .globl __start_context;
 __start_context:

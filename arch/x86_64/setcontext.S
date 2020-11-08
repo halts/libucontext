@@ -10,6 +10,9 @@
  * from the use of this software.
  */
 
+.globl libucontext_setcontext;
+libucontext_setcontext:
+
 .globl _libucontext_setcontext;
 _libucontext_setcontext:
 	/* set all of the registers */
