@@ -16,6 +16,7 @@ INC_DIRS := include $(BUILD_DIR)/arch/${ARCH}
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 override CFLAGS +=					\
+	-DCUSTOM_IMPL					\
 	-DG_LOG_DOMAIN='"ucontext"'			\
 	$(INC_FLAGS)					\
 	-MMD -MP

@@ -1,10 +1,7 @@
 # `libucontext`
 
-`libucontext` is a library which provides the `ucontext.h` C API.  Unlike other implementations,
-it faithfully follows the kernel process ABI when doing context swaps.
-
-Notably, when combined with `gcompat`, it provides a fully compatible implementation of the ucontext
-functions that are ABI compatible with glibc.
+`libucontext` is a library which provides the `ucontext.h` C API without colliding with ucontext.
+It is a fork of [kaniini/libucontext][1].
 
 
 ## supported architectures
@@ -13,16 +10,10 @@ Adding support for new architectures is easy, but you need to know assembly lang
 
 Right now these archs are supported and should work on bare metal:
 
- * x86
  * x86_64
- * armv6+ (`arm`)
  * aarch64
- * s390x
 
-These archs require kernel assistance and use a syscall (the only assembly is the trampoline):
-
- * ppc
- * ppc64 (ELFv2 ABI spec only, ELFv1 not supported)
+Other archs are supported in [kaniini/libucontext][1] and can be easily ported over if necessary.
 
 
 ## building
@@ -36,8 +27,4 @@ $ make ARCH=x86_64 check
 $ make ARCH=x86_64 DESTDIR=out install
 ```
 
-
-## support
-
-`libucontext` is offered as part of the `gcompat` project.  Accordingly, please address all questions
-and bug reports to gcompat@lists.adelielinux.org.
+[1]: https://github.com/kaniini/libucontext
